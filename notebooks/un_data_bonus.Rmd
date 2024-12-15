@@ -87,20 +87,45 @@ districts |>
 
 9. A lot of rows are missing additional values. Which district has the largest number of missing values (across all variables)? Hint: you might want to look at rowwise and c_across to answer this question.
 ```{r}
-
+districts |> 
+  rowwise() |> 
+  mutate(missing_vals = sum(is.na(c_across(alg_1:dropout)))) |> 
+  arrange(desc(missing_vals)) |> 
+  head(2)
 ```
 
 10. What is the mean graduation rate across all districts? What might be wrong with using just the regular mean to assess average graduation rates?
+```{r}
+districts |> 
+  drop_na(grad) |> 
+  summarise(mean(grad))
+```
+The simple mean counts all district entries equally when tallying scores, but using the weighted mean would give some schools less of an impact and others more of an impact on the overall mean. Districts should have a weight proportional to their enrollment. 
 
 11. Redo the previous question but use a weighted average (`weighted.mean`) graduation across all districts, weighing by enrollment. How much does this change your answer? Can you explain using the data the reason for the big change from using the mean?
+```{r}
+districts |> 
+  drop_na(c(grad, enrollment)) |> 
+  summarise(weighted.mean(grad, enrollment))
+```
 
 12. Find the unweighted and weighted average graduation rate by district.
 
 **Continued Exploration and Practice**
 
 13. Read in the school-level testing data for 2014, available [here](https://www.tn.gov/content/dam/tn/education/data/data_2014_state_base.xlsx). You might find the readxl library useful for this task. If you use this library, be sure to look at the `na` argument for the `read_excel` function.
+```{r}
+library(readxl)
+
+school_testing = read_excel('../data/tn_state_data.xlsx', na="")
+school_testing
+```
 
 To answer the following questions, use "All Students" for the subgroup. 
+```{r}
+school_testing <- school_testing |> 
+  filter(subgroup=='All Students')
+```
 
 14. How many schools have at least 20 percent of students below bsc for Algebra I? Which districts do these schools belong to?
 
