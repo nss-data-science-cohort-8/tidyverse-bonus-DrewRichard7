@@ -109,7 +109,20 @@ districts |>
   summarise(weighted.mean(grad, enrollment))
 ```
 
-12. Find the unweighted and weighted average graduation rate by district.
+12. Find the unweighted and weighted average graduation rate by region. 
+```{r}
+regional_grad_rates <- districts |> 
+  drop_na(grad, enrollment) |> 
+  group_by(region) |> 
+  summarize(mean = mean(grad), `weighted mean (by enrollment)`= weighted.mean(grad, enrollment)) 
+regional_grad_rates
+```
+```{r}
+districts |> 
+  drop_na(grad, enrollment) |> 
+  group_by(region) |> 
+  mutate(weighted = weighted.mean(grad, enrollment))
+```
 
 **Continued Exploration and Practice**
 
@@ -125,13 +138,39 @@ To answer the following questions, use "All Students" for the subgroup.
 ```{r}
 school_testing <- school_testing |> 
   filter(subgroup=='All Students')
+school_testing
+```
+```{r}
+school_testing |> 
+  distinct(school_name) |> 
+  count()
 ```
 
 14. How many schools have at least 20 percent of students below bsc for Algebra I? Which districts do these schools belong to?
+```{r}
+# subject = Algebra I
+alg_1_sub_20 <- school_testing |> 
+  filter(subject=='Algebra I' & pct_below_bsc >=20) 
+  
+alg_1_sub_20 |> 
+  count()
+alg_1_sub_20 |> 
+  distinct(system_name)
+```
 
 15. How many schools have at least 20 percent of students below bsc for _both_ Algebra I and English I?
+```{r}
+school_testing |> 
+  filter((subject=='Algebra I' | subject=='English I') & pct_below_bsc >=20) |> 
+  count()
+```
 
 16. Which grade has the highest pct_adv for Algebra I? Plot the average pct_adv per grade level as a bar chart. Make sure that the bars are ordered by grade level.
+```{r}
+school_testing |> 
+  filter(subject=='Algebra I' & grade != 'All Grades') |> 
+  group_by(grade) 
+```
 
 17. Find the correlation between pct_adv for Algebra I and pct_adv for Algebra II by school. Create a scatterplot showing Algebra II scores vs. Algebra I scores by school.
 
