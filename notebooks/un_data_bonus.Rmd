@@ -130,7 +130,7 @@ districts |>
 ```{r}
 library(readxl)
 
-school_testing = read_excel('../data/tn_state_data.xlsx', na="")
+school_testing = read_excel('../data/tn_state_data.xlsx', na="NA")
 school_testing
 ```
 
@@ -167,9 +167,7 @@ school_testing |>
 
 16. Which grade has the highest pct_adv for Algebra I? Plot the average pct_adv per grade level as a bar chart. Make sure that the bars are ordered by grade level.
 ```{r}
-school_testing |> 
-  filter(subject=='Algebra I' & grade != 'All Grades') |> 
-  group_by(grade) 
+
 ```
 
 17. Find the correlation between pct_adv for Algebra I and pct_adv for Algebra II by school. Create a scatterplot showing Algebra II scores vs. Algebra I scores by school.
