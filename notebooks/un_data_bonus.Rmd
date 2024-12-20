@@ -137,7 +137,8 @@ school_testing
 To answer the following questions, use "All Students" for the subgroup. 
 ```{r}
 school_testing <- school_testing |> 
-  filter(subgroup=='All Students')
+  filter(subgroup=='All Students') |> 
+  mutate_at(vars(n_below_bsc:pct_prof_adv), as.numeric)
 school_testing
 ```
 ```{r}
@@ -166,11 +167,104 @@ school_testing |>
 ```
 
 16. Which grade has the highest pct_adv for Algebra I? Plot the average pct_adv per grade level as a bar chart. Make sure that the bars are ordered by grade level.
-```{r}
 
+```{r}
+max_pct_adv <-school_testing |> 
+  filter(subject=='Algebra I' & grade != 'All Grades') |> 
+  drop_na(pct_adv) |> 
+  group_by(grade) |> 
+  summarise(pct_adv_max = max(pct_adv)) |> 
+  arrange(desc(pct_adv_max)) |> 
+  head(1)
+max_pct_adv
+```
+```{r}
+avg_pct_adv <- school_testing |> 
+  filter(subject=='Algebra I' & grade != 'All Grades') |> 
+  mutate(grade = as.numeric(grade)) |> 
+  drop_na(pct_adv) |> 
+  group_by(grade) |> 
+  summarise(pct_adv_mean = mean(pct_adv, na.rm = TRUE)) |> 
+  mutate(across(c('grade', 'pct_adv_mean'), round, 2)) |> 
+  arrange(grade)
+avg_pct_adv
+ggplot(avg_pct_adv, aes(x=grade, y=pct_adv_mean)) +
+  geom_col(fill='#00CC96')+
+  labs(title = 'Average % Advanced in Algebra I by Grade',
+       x='Grade', 
+       y='mean %advanced')+
+  geom_text(aes(label = pct_adv_mean), vjust = 1.25)
 ```
 
 17. Find the correlation between pct_adv for Algebra I and pct_adv for Algebra II by school. Create a scatterplot showing Algebra II scores vs. Algebra I scores by school.
+```{r}
+school_testing |> 
+  filter(subject %in% c('Algebra I', 'Algebra II'), school_name == 'Bailey STEM Magnet Middle')
+```
+
+```{r}
+# Remove rows with missing `pct_adv` and limit to relevant subjects
+algebras_cleaned <- school_testing |> 
+  filter(subject %in% c("Algebra I", "Algebra II")) |> 
+  drop_na(pct_adv) |> 
+  group_by(school_name, subject) |> 
+  summarise(pct_adv = mean(pct_adv, na.rm = TRUE), .groups = "drop") # Resolve duplicates
+algebras_cleaned
+```
+
+```{r}
+# reshape the data to wide format (one row per school)
+algebras_reshaped <- algebras_cleaned |> 
+  pivot_wider(
+    names_from = subject, 
+    values_from = pct_adv, 
+  ) |>
+  drop_na(`Algebra I`, `Algebra II`)  # Drop schools missing scores (middles that don't offer alg II mostly)
+algebras_reshaped
+```
+```{r}
+correlation <- algebras_reshaped |>
+  summarise(correlation = cor(`Algebra I`, `Algebra II`)) |> 
+  mutate(across(c('correlation'), round, 4))
+correlation
+```
+
+```{r}
+# create a scatter plot
+ggplot(algebras_reshaped, aes(x = `Algebra I`, y = `Algebra II`)) +
+  geom_point(color = '#00CC96', alpha = 0.5) +
+  labs(
+    title = "Scatterplot of Algebra II vs Algebra I Scores by School",
+    x = "Algebra I Scores",
+    y = "Algebra II Scores"
+  ) +
+  theme_minimal() + 
+  annotate("text", x=60, y=40, label= sprintf('correlation = %s', correlation))
+```
+
+```
+
+```{r}
+school_testing |> 
+  filter(school_name =='Adamsville Junior/Senior High School', subject=='Algebra I')
+```
+
+```{r}
+algebras <- school_testing |> 
+  filter((subject == 'Algebra I'|subject =='Algebra II') & grade == 'All Grades') |> 
+  drop_na(pct_adv) |> 
+  select(school_name, subject, pct_adv)
+algebras <- algebras |> 
+  group_by(school_name, subject) |> 
+  summarise(pct_adv = mean(pct_adv, na.rm = TRUE), .groups = "drop")
+
+algebras |>
+  pivot_wider(
+    names_from = subject,
+    values_from = pct_adv
+  )
+
+```
 
 18. Find all schools in Rutherford County that have "High School" in their name. For these schools, create a chart (your choice) showing the differences in pct_below_bsc, pct_bsc, pct_prof, and pct_adv for Algebra I when looking across all subgroups and grades.
 
