@@ -255,9 +255,38 @@ ggplot(algebras_reshaped, aes(x = `Algebra I`, y = `Algebra II`)) +
 
 
 ```{r}
-school_testing |> 
-  filter(system_name=='Rutherford County')
+high_schools <- school_testing |> 
+  filter(system_name == "Rutherford County" & str_detect(school_name, "High School") & grade == 'All Grades' & subject == 'Algebra I') |> 
+  select(school_name, subject, grade, pct_below_bsc:pct_adv)
+high_schools |> 
+  rowwise() |> 
+  mutate(total = sum(c_across(pct_below_bsc:pct_adv)))
 ```
+
+```{r}
+
+```
+
+```{r}
+high_schools_long <- high_schools |> 
+  pivot_longer(cols = c(pct_below_bsc, pct_bsc, pct_prof, pct_adv),
+               names_to = "Performance_Level",
+               values_to = "Percentage")
+high_schools_long
+
+ggplot(high_schools_long, aes(x = school_name, y = Percentage, fill = Performance_Level)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Performance Comparison in Rutherford County High Schools",
+    x = "High Schools",
+    y = "Percentage",
+    fill = "Performance Levels"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = .85))
+```
+
+
 ```{r}
 school_testing |> 
   filter(system_name == 'Sumner County', grade == 'All Grades') |> 
@@ -266,3 +295,55 @@ school_testing |>
 ```
 
 19. Create a function which allows you to select a system_name and which creates a plot to show the differences in pct_below_bsc, pct_bsc, pct_prof, and pct_adv for Algebra I when looking across all subgroups and grades for all schools with "High School" in their names within that system.
+```{r}
+compare_alg_1 = function(input)
+{
+
+  high_schools <- school_testing |> 
+  filter(system_name == input & str_detect(school_name, "High School") & grade == 'All Grades' & subject == 'Algebra I') |> 
+  select(school_name, subject, grade, pct_below_bsc:pct_adv)
+  
+
+  high_schools_long <- high_schools |> 
+  pivot_longer(cols = c(pct_below_bsc, pct_bsc, pct_prof, pct_adv),
+               names_to = "Performance_Level",
+               values_to = "Percentage")
+  high_schools_long
+
+
+  high_schools_long <- high_schools |> 
+  pivot_longer(cols = c(pct_below_bsc, pct_bsc, pct_prof, pct_adv),
+               names_to = "Performance_Level",
+               values_to = "Percentage")
+
+  high_schools_long
+
+
+  ggplot(high_schools_long, aes(x = school_name, y = Percentage, fill = Performance_Level)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Performance Comparison in Rutherford County High Schools",
+    x = "High Schools",
+    y = "Percentage",
+    fill = "Performance Levels"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = .85))
+  ggsave(file="../assets/alg_1_comparisons.png", width=8, height=5, dpi=300, bg='#ffffff')
+}
+```
+```{r}
+school_testing |> 
+  distinct(system_name)
+```
+```{r}
+compare_alg_1('Sumner County')
+```
+
+
+
+
+
+
+
+
