@@ -228,6 +228,11 @@ correlation <- algebras_reshaped |>
   mutate(across(c('correlation'), round, 4))
 correlation
 ```
+```{r}
+linear_model = glm(`Algebra II` ~ `Algebra I`, family = 'gaussian', data = algebras_reshaped)
+summary(linear_model)
+  
+```
 
 ```{r}
 # create a scatter plot
@@ -239,33 +244,25 @@ ggplot(algebras_reshaped, aes(x = `Algebra I`, y = `Algebra II`)) +
     y = "Algebra II Scores"
   ) +
   theme_minimal() + 
-  annotate("text", x=60, y=40, label= sprintf('correlation = %s', correlation))
+  annotate("text", x=15, y=45, label= sprintf('correlation = %s', correlation))+
+  geom_smooth(method = "lm")
+  
 ```
 
-```
+
+18. Find all schools in Rutherford County that have "High School" in their name. For these schools, create a chart (your choice) showing the differences in pct_below_bsc, pct_bsc, pct_prof, and pct_adv for Algebra I when looking across all subgroups and grades.
+
+
 
 ```{r}
 school_testing |> 
-  filter(school_name =='Adamsville Junior/Senior High School', subject=='Algebra I')
+  filter(system_name=='Rutherford County')
 ```
-
 ```{r}
-algebras <- school_testing |> 
-  filter((subject == 'Algebra I'|subject =='Algebra II') & grade == 'All Grades') |> 
-  drop_na(pct_adv) |> 
-  select(school_name, subject, pct_adv)
-algebras <- algebras |> 
-  group_by(school_name, subject) |> 
-  summarise(pct_adv = mean(pct_adv, na.rm = TRUE), .groups = "drop")
-
-algebras |>
-  pivot_wider(
-    names_from = subject,
-    values_from = pct_adv
-  )
-
+school_testing |> 
+  filter(system_name == 'Sumner County', grade == 'All Grades') |> 
+  distinct(school_name) |> 
+  arrange(school_name)
 ```
-
-18. Find all schools in Rutherford County that have "High School" in their name. For these schools, create a chart (your choice) showing the differences in pct_below_bsc, pct_bsc, pct_prof, and pct_adv for Algebra I when looking across all subgroups and grades.
 
 19. Create a function which allows you to select a system_name and which creates a plot to show the differences in pct_below_bsc, pct_bsc, pct_prof, and pct_adv for Algebra I when looking across all subgroups and grades for all schools with "High School" in their names within that system.
