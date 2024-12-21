@@ -322,14 +322,14 @@ compare_alg_1 = function(input)
   ggplot(high_schools_long, aes(x = school_name, y = Percentage, fill = Performance_Level)) +
   geom_bar(stat = "identity") +
   labs(
-    title = "Performance Comparison in Rutherford County High Schools",
+    title = sprintf("Performance Comparison in %s High Schools", input),
     x = "High Schools",
     y = "Percentage",
     fill = "Performance Levels"
   ) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = .85))
-  ggsave(file="../assets/alg_1_comparisons.png", width=8, height=5, dpi=300, bg='#ffffff')
+  ggsave(file="../assets/alg_1_comparisons.png", width=8, height=5, dpi=300, bg='#e7e3d9')
 }
 ```
 ```{r}
